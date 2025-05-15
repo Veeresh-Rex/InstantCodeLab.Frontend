@@ -8,13 +8,22 @@ import {
   DropdownMenu,
 } from '@heroui/dropdown';
 import { Link } from '@heroui/link';
-import { Download, Play, LogOut } from 'lucide-react';
+import { Download, Play, LogOut, Trash2 } from 'lucide-react';
 import { Chip } from '@heroui/chip';
 
 import { ThemeSwitch } from '@/components/theme-switch';
 import React from 'react';
+import { stopConnection } from '@/services/signalRService';
 
-export const EditorNavbar = ({ isAdmin = true }: { isAdmin?: boolean }) => {
+export const EditorNavbar = ({
+  userName,
+  chatRoom,
+  isAdmin = true,
+}: {
+  userName: string;
+  chatRoom: string;
+  isAdmin?: boolean;
+}) => {
   const languages = [
     {
       key: 'Javascript',
@@ -47,7 +56,7 @@ export const EditorNavbar = ({ isAdmin = true }: { isAdmin?: boolean }) => {
     <Navbar>
       <NavbarBrand className='mr-4'>
         <p className='hidden sm:block font-bold text-inherit text-lg'>
-          LabName
+          {chatRoom}
         </p>
         <NavbarItem className='ml-2'>
           {isAdmin ? (
@@ -106,19 +115,30 @@ export const EditorNavbar = ({ isAdmin = true }: { isAdmin?: boolean }) => {
               as='button'
               className='transition-transform'
               color='secondary'
-              name='Username'
+              name={userName}
               size='sm'
             />
           </DropdownTrigger>
           <DropdownMenu aria-label='Profile Actions' variant='flat'>
             <DropdownItem key='profile' className='h-14 gap-2'>
               <p className='font-semibold'>Signed in as</p>
-              <p className='font-semibold'>Username</p>
+              <p className='font-semibold'>{userName}</p>
+            </DropdownItem>
+            <DropdownItem
+              key='deleteroom'
+              href='/'
+              as={Link}
+              color='danger'
+              className={'text-danger'}
+              onClick={stopConnection}
+              startContent={<Trash2 />}>
+              Delete Room
             </DropdownItem>
             <DropdownItem
               key='logout'
               href='/'
               as={Link}
+              onClick={stopConnection}
               color='danger'
               className={'text-danger'}
               startContent={<LogOut />}>
