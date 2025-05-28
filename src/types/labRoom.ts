@@ -11,4 +11,7 @@ export interface RoomResponseDto {
 
 export interface GetRoomDto{
   id: string
+  labName : string,
+  isRoomPasswordEnabled : boolean,
+  isAdminPinEnabled : boolean,
 }

@@ -1,9 +1,9 @@
-import connection from "./signalRClient";
+import connection from './signalRClient';
 
 export const startConnection = async () => {
-  if (connection.state === "Disconnected") {
+  if (connection.state === 'Disconnected') {
     await connection.start();
-    console.log("SignalR Connected");
+    console.log('SignalR Connected');
   }
 };
 

@@ -1,28 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
+import { useParams } from 'react-router-dom';
+import { Spinner as Loader } from '@heroui/spinner';
 
 import connection from '../services/signalRClient';
 
 import ActiveMembers from './activeMembers';
 import Spinner from './spinner';
+
 import ModalPart from '@/components/modal';
 import EditorLayout from '@/layouts/editorLayout';
 import { InputOutputTabs } from '@/components/inputOutput';
 import { useSignalR } from '@/hooks/useSignalR';
 import { invokeMethod } from '@/services/signalRService';
-import { User } from '@/types/User';
-import { useParams } from 'react-router-dom';
+import { LabLoginResponseDto, User } from '@/types/user';
 import { getRoom } from '@/services/labRoomService';
 import { GetRoomDto } from '@/types/labRoom';
-import { Spinner as Loader } from '@heroui/spinner';
 import DefaultLayout from '@/layouts/default';
 import { title } from '@/components/primitives';
+import { saveUserInfo } from '@/services/userService';
 
 const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [code, setCode] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [users, setUsers] = useState<User[]>([]);
+  const [pairedUser, SetPairedUser] = useState<User | undefined>();
   const { id } = useParams();
   const [currentRoom, setCurrentRoom] = useState<GetRoomDto | null>(null);
 
@@ -30,6 +33,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
     const getData = async () => {
       try {
         const data = await getRoom(id || '');
+
         setCurrentRoom(data);
       } catch (error) {
         setLoading(false);
@@ -52,6 +56,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   useSignalR<User[]>(
     'UserJoinedRoom',
     useCallback((joinedUsers) => {
+      console.log('joinedUsers: ', joinedUsers);
       setUsers(joinedUsers);
     }, [])
   );
@@ -73,13 +78,30 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   // Handle active member selection
   const handleChangeUser = useCallback(async (activeUserSet: string) => {
     await connection.invoke('JoinPairCoding', activeUserSet);
+
+    console.log('activeUserSet', activeUserSet);
+    console.log('User', users);
+
+    SetPairedUser(users.find((e) => e.id === activeUserSet));
   }, []);
 
   // Set current user and code
-  const handleCurrentUserChange = useCallback((user: User) => {
-    setCurrentUser(user);
-    setCode(user.code);
-  }, []);
+  const handleCurrentUserChange = useCallback(
+    (response: LabLoginResponseDto) => {
+      const user: User = {
+        id: response.id,
+        username: response.username,
+        code: response.code,
+        joinedLabRoomId: response.labRoomName,
+        isAdmin: response.isAdmin,
+        userType: 0,
+      };
+      setCurrentUser(user);
+      setCode(response.code);
+      saveUserInfo(user); // save user info to local storage
+    },
+    []
+  );
 
   if (loading)
     return (
@@ -105,10 +127,15 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
       </DefaultLayout>
     );
 
+  //No user logged in
   if (!currentUser) {
     return (
-      <EditorLayout userName='' chatRoom='' showNavbar={true}>
-        <ModalPart setCurentUserData={handleCurrentUserChange} />
+      <EditorLayout chatRoom='' showNavbar={true} userName=''>
+        <ModalPart
+          isAdmin={IsAdmin}
+          roomDetails={currentRoom}
+          setCurentUserData={handleCurrentUserChange}
+        />
         <Spinner />
       </EditorLayout>
     );
@@ -116,14 +143,14 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
 
   return (
     <EditorLayout
-      chatRoom={currentUser.labRoomName}
+      chatRoom={currentUser.joinedLabRoomId}
       userName={currentUser.username}>
       <div className='flex flex-row'>
         <div className='basis-5/6 mr-2'>
+          {console.log('pairedUser?.isAdmin: ', pairedUser?.isAdmin)}
           <Editor
             defaultLanguage='javascript'
             defaultPath='file.js'
-            value={code}
             height='93vh'
             options={{
               fontSize: 16,
@@ -132,9 +159,10 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
               scrollBeyondLastLine: false,
               autoIndent: 'full',
               formatOnPaste: true,
-              readOnly: false,
+              readOnly: pairedUser?.isAdmin,
             }}
             theme='vs-dark'
+            value={code}
             onChange={sendMessage}
           />
         </div>

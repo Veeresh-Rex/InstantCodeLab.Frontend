@@ -13,33 +13,53 @@ import { addToast } from '@heroui/toast';
 
 import { userLoginLab } from '@/services/labService';
 import { invokeMethod } from '@/services/signalRService';
+import { GetRoomDto } from '@/types/labRoom';
+import { LabLoginResponseDto } from '@/types/user';
+import { useParams } from 'react-router-dom';
 
-export default function ModalPart({ setCurentUserData }) {
+interface ModalPartProps {
+  roomDetails: GetRoomDto | null;
+  setCurentUserData: (data: LabLoginResponseDto) => void;
+  isAdmin: boolean;
+}
+
+export default function ModalPart({
+  roomDetails,
+  setCurentUserData,
+  isAdmin,
+}: ModalPartProps) {
   const { isOpen, onClose, onOpenChange } = useDisclosure({
     defaultOpen: true,
   });
+  const { id } = useParams();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     let data = Object.fromEntries(new FormData(e.currentTarget));
 
+    data['isAdmin'] = isAdmin;
+
     try {
-      var response = await userLoginLab(data);
+      var response = await userLoginLab(data, id);
+
       setCurentUserData(response);
+
+      await invokeMethod('JoinSpecificlabelRoom', {
+        UserName: data.Username,
+        LabRoomId: response.labRoomName,
+        UserType: 1,
+      });
+
     } catch (error) {
-      console.error('Error creating lab:', error);
       addToast({
         color: 'danger',
         title: 'Error from server',
         description: 'Failed to join lab. Please try again.',
       });
+
       return;
     }
-    await invokeMethod('JoinSpecificlabelRoom', {
-      UserName: data.Username,
-      LabRoomId: 'Codelab',
-      UserType: 1,
-    });
+
     addToast({
       color: 'success',
       title: 'Success',
@@ -68,22 +88,26 @@ export default function ModalPart({ setCurentUserData }) {
               placeholder='Enter Username'
               type='text'
             />
-            <Input
-              label='Lab Password'
-              minLength={4}
-              name='Password'
-              placeholder='Enter lab password'
-              type='password'
-            />
-            <div className='flex flex-col items-start gap-2'>
-              <div className='text-small'>Admin PIN</div>
-              <InputOtp
-                length={4}
-                name='AdminPIN'
+            {roomDetails?.isRoomPasswordEnabled && (
+              <Input
+                label='Lab Password'
+                minLength={4}
+                name='Password'
+                placeholder='Enter lab password'
                 type='password'
-                variant='faded'
               />
-            </div>
+            )}
+            {isAdmin && roomDetails?.isAdminPinEnabled && (
+              <div className='flex flex-col items-start gap-2'>
+                <div className='text-small'>Admin PIN</div>
+                <InputOtp
+                  length={4}
+                  name='AdminPIN'
+                  type='password'
+                  variant='faded'
+                />
+              </div>
+            )}
             <Button className='mt-b' color='primary' type='submit'>
               Submit
             </Button>

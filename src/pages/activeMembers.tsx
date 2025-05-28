@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -6,15 +6,12 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  User as UserComponent,
-} from '@heroui/react';
-import { Trash2 } from 'lucide-react';
-import { User } from '@/types/User';
+} from "@heroui/react";
+import { Trash2 } from "lucide-react";
+import { Chip } from "@heroui/chip";
 
-interface ActiveMember {
-  id: string;
-  userName: string;
-}
+import { User } from "@/types/user";
+import { getUserInfo } from "@/services/userService";
 
 interface ActiveMembersProps {
   users: User[];
@@ -24,9 +21,9 @@ interface ActiveMembersProps {
 }
 
 const columns = [
-  { name: 'MEMBERS', uid: 'name' },
-  { name: 'ACTIONS', uid: 'actions' },
-] as const;
+  { name: "MEMBERS", uid: "name" },
+  { name: "ACTIONS", uid: "actions" },
+];
 
 const ActiveMembers: React.FC<ActiveMembersProps> = ({
   users,
@@ -35,23 +32,43 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
   onRemoveUser,
 }) => {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([defaultSelected])
+    new Set([defaultSelected]),
   );
 
+  const currentUser = getUserInfo();
+
+  if (!currentUser?.isAdmin) {
+    columns.splice(1, 1);
+  }
+
   const renderCell = useCallback(
-    (user: ActiveMember, columnKey: string) => {
+    (user: User, columnKey: string) => {
       switch (columnKey) {
-        case 'name':
+        case "name":
           return (
-            <UserComponent avatarProps={{ radius: 'lg' }} name={user.userName} />
+            <div>
+              {user.userName}
+              {"  "}
+              {user.isAdmin ? (
+                <Chip color="danger" size="sm">
+                  Admin
+                </Chip>
+              ) : null}
+              {"  "}
+              {currentUser?.id === user.id ? (
+                <Chip color="primary" size="sm">
+                  You
+                </Chip>
+              ) : null}
+            </div>
           );
-        case 'actions':
+        case "actions":
           return (
             <div className="relative flex items-center justify-center gap-2">
               <button
-                onClick={() => onRemoveUser?.(user.id)}
-                className="text-lg text-danger cursor-pointer active:opacity-50"
                 aria-label="Remove user"
+                className="text-lg text-danger cursor-pointer active:opacity-50"
+                onClick={() => onRemoveUser?.(user.id)}
               >
                 <Trash2 />
               </button>
@@ -61,31 +78,31 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
           return null;
       }
     },
-    [onRemoveUser]
+    [onRemoveUser],
   );
 
   const handleSelectedUser = useCallback(
     (activeUserSet: Set<string>) => {
       setSelectedKeys(activeUserSet);
-      handleChangeUser(Array.from(activeUserSet)[0] || '');
+      handleChangeUser(Array.from(activeUserSet)[0] || "");
     },
-    [handleChangeUser]
+    [handleChangeUser],
   );
 
   return (
     <Table
-      aria-label="Active Members"
-      selectionMode="single"
       removeWrapper
+      aria-label="Active Members"
       className="h-40"
       selectedKeys={selectedKeys}
+      selectionMode="single"
       onSelectionChange={handleSelectedUser}
     >
       <TableHeader columns={columns}>
         {(column) => (
           <TableColumn
             key={column.uid}
-            align={column.uid === 'actions' ? 'center' : 'start'}
+            align={column.uid === "actions" ? "center" : "start"}
           >
             {column.name}
           </TableColumn>

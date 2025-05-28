@@ -14,34 +14,18 @@ import { Chip } from '@heroui/chip';
 import { ThemeSwitch } from '@/components/theme-switch';
 import React from 'react';
 import { stopConnection } from '@/services/signalRService';
+import { getUserInfo } from "@/services/userService";
+import { languages } from '@/constant/constant';
 
 export const EditorNavbar = ({
   userName,
   chatRoom,
-  isAdmin = true,
 }: {
   userName: string;
   chatRoom: string;
-  isAdmin?: boolean;
 }) => {
-  const languages = [
-    {
-      key: 'Javascript',
-      label: 'Javascript',
-    },
-    {
-      key: 'Csharp',
-      label: 'C#',
-    },
-    {
-      key: 'Python',
-      label: 'Python',
-    },
-    {
-      key: 'Java',
-      label: 'Java',
-    },
-  ];
+
+  const getUser = getUserInfo();
 
   const [selectedKeys, setSelectedKeys] = React.useState(
     new Set([languages[0].key])
@@ -59,7 +43,7 @@ export const EditorNavbar = ({
           {chatRoom}
         </p>
         <NavbarItem className='ml-2'>
-          {isAdmin ? (
+          {getUser?.isAdmin ? (
             <Dropdown>
               <DropdownTrigger>
                 <Button color='secondary' variant='bordered' size='sm'>
