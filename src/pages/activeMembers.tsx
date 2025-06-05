@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 import {
   Table,
   TableHeader,
@@ -6,36 +6,36 @@ import {
   TableBody,
   TableRow,
   TableCell,
-} from "@heroui/react";
-import { Trash2 } from "lucide-react";
-import { Chip } from "@heroui/chip";
+} from '@heroui/react';
+import { Trash2 } from 'lucide-react';
+import { Chip } from '@heroui/chip';
 
-import { User } from "@/types/user";
-import { getUserInfo } from "@/services/userService";
+import { User } from '@/types/user';
+import { invokeMethod } from '@/services/signalRService';
 
 interface ActiveMembersProps {
   users: User[];
   handleChangeUser: (selectedUserIds: string) => void;
-  defaultSelected: string;
-  onRemoveUser?: (userId: string) => void;
+  currentUser: User;
 }
 
 const columns = [
-  { name: "MEMBERS", uid: "name" },
-  { name: "ACTIONS", uid: "actions" },
+  { name: 'MEMBERS', uid: 'name' },
+  { name: 'ACTIONS', uid: 'actions' },
 ];
 
 const ActiveMembers: React.FC<ActiveMembersProps> = ({
   users,
   handleChangeUser,
-  defaultSelected,
-  onRemoveUser,
+  currentUser,
 }) => {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([defaultSelected]),
+    new Set([currentUser.id])
   );
 
-  const currentUser = getUserInfo();
+  const onRemoveUser = async (id: string) => {
+    await invokeMethod('SendCodeChange', currentUser.joinedLabRoomId, id);
+  };
 
   if (!currentUser?.isAdmin) {
     columns.splice(1, 1);
@@ -44,32 +44,31 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
   const renderCell = useCallback(
     (user: User, columnKey: string) => {
       switch (columnKey) {
-        case "name":
+        case 'name':
           return (
             <div>
-              {user.userName}
-              {"  "}
+              {user.username}
+              {'  '}
               {user.isAdmin ? (
-                <Chip color="danger" size="sm">
+                <Chip color='danger' size='sm'>
                   Admin
                 </Chip>
               ) : null}
-              {"  "}
+              {'  '}
               {currentUser?.id === user.id ? (
-                <Chip color="primary" size="sm">
+                <Chip color='primary' size='sm'>
                   You
                 </Chip>
               ) : null}
             </div>
           );
-        case "actions":
+        case 'actions':
           return (
-            <div className="relative flex items-center justify-center gap-2">
+            <div className='relative flex items-center justify-center gap-2'>
               <button
-                aria-label="Remove user"
-                className="text-lg text-danger cursor-pointer active:opacity-50"
-                onClick={() => onRemoveUser?.(user.id)}
-              >
+                aria-label='Remove user'
+                className='text-lg text-danger cursor-pointer active:opacity-50'
+                onClick={() => onRemoveUser(user.id)}>
                 <Trash2 />
               </button>
             </div>
@@ -78,41 +77,39 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
           return null;
       }
     },
-    [onRemoveUser],
+    [onRemoveUser]
   );
 
   const handleSelectedUser = useCallback(
     (activeUserSet: Set<string>) => {
       setSelectedKeys(activeUserSet);
-      handleChangeUser(Array.from(activeUserSet)[0] || "");
+      handleChangeUser(Array.from(activeUserSet)[0] || '');
     },
-    [handleChangeUser],
+    [handleChangeUser]
   );
 
   return (
     <Table
       removeWrapper
-      aria-label="Active Members"
-      className="h-40"
+      aria-label='Active Members'
+      className='h-40'
       selectedKeys={selectedKeys}
-      selectionMode="single"
-      onSelectionChange={handleSelectedUser}
-    >
+      selectionMode='single'
+      onSelectionChange={handleSelectedUser}>
       <TableHeader columns={columns}>
         {(column) => (
           <TableColumn
             key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
-          >
+            align={column.uid === 'actions' ? 'center' : 'start'}>
             {column.name}
           </TableColumn>
         )}
       </TableHeader>
       <TableBody items={users}>
         {(user) => (
-          <TableRow key={user.id}>
+          <TableRow key={user?.id}>
             {(columnKey) => (
-              <TableCell>{renderCell(user, columnKey)}</TableCell>
+              <TableCell>{renderCell(user, columnKey as string)}</TableCell>
             )}
           </TableRow>
         )}

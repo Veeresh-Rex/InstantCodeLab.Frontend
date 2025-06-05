@@ -1,5 +1,3 @@
-import { UserType } from '@/constant/enums';
-
 export interface User {
   id: string;
   username: string;
@@ -7,7 +5,7 @@ export interface User {
   joinedLabRoomId: string;
   joinedLabRoomName: string;
   language: string;
-  userType: UserType;
+  isAdmin: boolean;
 }
 
 export interface LabLoginResponseDto {

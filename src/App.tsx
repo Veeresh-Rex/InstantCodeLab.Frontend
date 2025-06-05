@@ -5,7 +5,7 @@ import AboutUs from '@/pages/aboutus';
 import FaqPage from '@/pages/faq';
 import Feature from '@/pages/feature';
 import NewSetup from '@/pages/newsetup';
-import Editor from '@/pages/editor';
+import Editor from '@/pages/editorPage';
 
 function App() {
   return (

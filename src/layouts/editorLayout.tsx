@@ -2,8 +2,8 @@ import { EditorNavbar } from '@/components/editornavbar';
 
 export default function EditorLayout({
   children,
-  userName = undefined,
-  chatRoom = undefined,
+  userName,
+  chatRoom,
   showNavbar = true,
 }: {
   children: React.ReactNode;
@@ -15,10 +15,7 @@ export default function EditorLayout({
     <div className='flex flex-col h-screen'>
       <>
         {showNavbar && (
-          <EditorNavbar
-            userName={userName ?? ''}
-            chatRoom={chatRoom ?? ''}
-          />
+          <EditorNavbar userName={userName ?? ''} chatRoom={chatRoom ?? ''} />
         )}
         <main className='w-screen'>{children}</main>
       </>

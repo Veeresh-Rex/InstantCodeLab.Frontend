@@ -14,12 +14,12 @@ import { addToast } from '@heroui/toast';
 import { userLoginLab } from '@/services/labService';
 import { invokeMethod } from '@/services/signalRService';
 import { GetRoomDto } from '@/types/labRoom';
-import { LabLoginResponseDto } from '@/types/user';
 import { useParams } from 'react-router-dom';
+import { User } from '@/types/user';
 
 interface ModalPartProps {
   roomDetails: GetRoomDto | null;
-  setCurentUserData: (data: LabLoginResponseDto) => void;
+  setCurentUserData: (data: User) => void;
   isAdmin: boolean;
 }
 
@@ -43,13 +43,6 @@ export default function ModalPart({
       var response = await userLoginLab(data, id);
 
       setCurentUserData(response);
-
-      await invokeMethod('JoinSpecificlabelRoom', {
-        UserName: data.Username,
-        LabRoomId: response.labRoomName,
-        UserType: 1,
-      });
-
     } catch (error) {
       addToast({
         color: 'danger',

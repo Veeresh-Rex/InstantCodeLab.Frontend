@@ -104,6 +104,7 @@ export default defineConfig([
       "no-unused-vars": "off",
       "unused-imports/no-unused-vars": "off",
       "unused-imports/no-unused-imports": "warn",
+      "single-quote": "on",
 
       "@typescript-eslint/no-unused-vars": [
         "warn",

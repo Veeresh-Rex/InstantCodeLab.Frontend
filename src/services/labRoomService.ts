@@ -16,8 +16,8 @@ export const createLab = async (
 
 export const getRoom = async(id: string): Promise<GetRoomDto> =>{
  try {
-    const response = await apiClient.get(`/api/Room/${id}`);
-    return response.  data;
+    const response = await apiClient.get<GetRoomDto>(`/api/Room/${id}`);
+    return response.data;
   } catch (error: any) {
     throw error;
   }

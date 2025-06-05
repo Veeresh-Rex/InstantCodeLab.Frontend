@@ -10,11 +10,11 @@ import {
 import { Link } from '@heroui/link';
 import { Download, Play, LogOut, Trash2 } from 'lucide-react';
 import { Chip } from '@heroui/chip';
+import React from 'react';
 
 import { ThemeSwitch } from '@/components/theme-switch';
-import React from 'react';
 import { stopConnection } from '@/services/signalRService';
-import { getUserInfo } from "@/services/userService";
+import { getUserInfo } from '@/services/userService';
 import { languages } from '@/constant/constant';
 
 export const EditorNavbar = ({
@@ -24,16 +24,10 @@ export const EditorNavbar = ({
   userName: string;
   chatRoom: string;
 }) => {
-
   const getUser = getUserInfo();
 
-  const [selectedKeys, setSelectedKeys] = React.useState(
-    new Set([languages[0].key])
-  );
-
-  const selectedValue = React.useMemo(
-    () => Array.from(selectedKeys).join(', ').replace(/_/g, ''),
-    [selectedKeys]
+  const [selectedKey, setSelectedKey] = React.useState<string>(
+    languages[0].key
   );
 
   return (
@@ -46,18 +40,20 @@ export const EditorNavbar = ({
           {getUser?.isAdmin ? (
             <Dropdown>
               <DropdownTrigger>
-                <Button color='secondary' variant='bordered' size='sm'>
-                  {languages.find((e) => e.key === selectedValue)?.label}
+                <Button color='secondary' size='sm' variant='bordered'>
+                  {languages.find((e) => e.key === selectedKey)?.label}
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
                 aria-label='Single selection example'
                 items={languages}
-                selectedKeys={selectedKeys}
+                selectedKeys={selectedKey}
                 selectionMode='single'
                 variant='flat'
-                onSelectionChange={setSelectedKeys}>
+                onSelectionChange={(keys) => {
+                  setSelectedKey(keys as string);
+                }}>
                 {(item) => (
                   <DropdownItem key={item.key}>{item.label}</DropdownItem>
                 )}
@@ -110,22 +106,22 @@ export const EditorNavbar = ({
             </DropdownItem>
             <DropdownItem
               key='deleteroom'
-              href='/'
               as={Link}
-              color='danger'
               className={'text-danger'}
-              onClick={stopConnection}
-              startContent={<Trash2 />}>
+              color='danger'
+              href='/'
+              startContent={<Trash2 />}
+              onClick={stopConnection}>
               Delete Room
             </DropdownItem>
             <DropdownItem
               key='logout'
-              href='/'
               as={Link}
-              onClick={stopConnection}
-              color='danger'
               className={'text-danger'}
-              startContent={<LogOut />}>
+              color='danger'
+              href='/'
+              startContent={<LogOut />}
+              onClick={stopConnection}>
               Log Out
             </DropdownItem>
           </DropdownMenu>
