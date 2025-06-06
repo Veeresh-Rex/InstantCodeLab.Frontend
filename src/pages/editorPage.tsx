@@ -73,7 +73,6 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
     setCode(value);
     try {
       if (connection) {
-        console.log('User is paired with: ', pairedUserRef.current);
         await invokeMethod('SendCodeChange', pairedUserRef.current?.id, value);
       }
     } catch (error) {
@@ -85,7 +84,6 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const handleChangeUser = useCallback(
     async (activeUserSet: string) => {
       const connectedUser = allUsers.find((e) => e.id === activeUserSet);
-      console.log('Connected User:', connectedUser);
       try {
         setPairedUser(connectedUser);
         pairedUserRef.current = connectedUser;

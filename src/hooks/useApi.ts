@@ -6,7 +6,6 @@ export const useApi = <T>(apiCall: () => Promise<T>, deps: any[] = []) => {
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(() => {
-    console.log('API call trigger');
     setLoading(true);
     setError(null);
     setData(null);
