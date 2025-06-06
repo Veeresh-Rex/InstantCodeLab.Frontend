@@ -1,4 +1,4 @@
-import { User } from '@/types/user';
+import { User } from '@/types/userTypes';
 import apiClient from './apiClient';
 
 export const userLoginLab = async (body: any, labId: string | undefined): Promise<User> => {

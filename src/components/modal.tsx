@@ -14,7 +14,7 @@ import { addToast } from '@heroui/toast';
 import { userLoginLab } from '@/services/labService';
 import { GetRoomDto } from '@/types/labRoom';
 import { useParams } from 'react-router-dom';
-import { User } from '@/types/user';
+import { User } from '@/types/userTypes';
 
 interface ModalPartProps {
   roomDetails: GetRoomDto | null;

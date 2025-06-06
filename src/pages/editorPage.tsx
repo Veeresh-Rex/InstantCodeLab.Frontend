@@ -10,7 +10,7 @@ import ModalPart from '@/components/modal';
 import EditorLayout from '@/layouts/editorLayout';
 import { useSignalR } from '@/hooks/useSignalR';
 import { invokeMethod, stopConnection } from '@/services/signalRService';
-import { User } from '@/types/user';
+import { User } from '@/types/userTypes';
 import { getRoom } from '@/services/labRoomService';
 import { GetRoomDto } from '@/types/labRoom';
 import DefaultLayout from '@/layouts/default';

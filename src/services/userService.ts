@@ -1,4 +1,4 @@
-import { User } from '@/types/user';
+import { User } from '@/types/userTypes';
 
 const USER_KEY = 'user_info';
 

@@ -10,7 +10,7 @@ import {
 import { Trash2 } from 'lucide-react';
 import { Chip } from '@heroui/chip';
 
-import { User } from '@/types/user';
+import { User } from '@/types/userTypes';
 import { invokeMethod } from '@/services/signalRService';
 
 interface ActiveMembersProps {

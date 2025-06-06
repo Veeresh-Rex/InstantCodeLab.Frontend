@@ -2,7 +2,7 @@ import Editor from '@monaco-editor/react';
 import ActiveMembers from '@/pages/activeMembers';
 import { InputOutputTabs } from '@/components/inputOutput';
 import EditorLayout from '@/layouts/editorLayout';
-import { User } from '@/types/user';
+import { User } from '@/types/userTypes';
 
 type EditorViewProps = {
   code: string;
