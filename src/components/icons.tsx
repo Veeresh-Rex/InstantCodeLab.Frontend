@@ -185,7 +185,7 @@ export const SearchIcon = (props: IconSvgProps) => (
   </svg>
 );
 
-export const CodeIcon = (props: IconSvgProps) => (
+export const CodeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"

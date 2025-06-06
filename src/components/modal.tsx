@@ -12,7 +12,6 @@ import { Form } from '@heroui/form';
 import { addToast } from '@heroui/toast';
 
 import { userLoginLab } from '@/services/labService';
-import { invokeMethod } from '@/services/signalRService';
 import { GetRoomDto } from '@/types/labRoom';
 import { useParams } from 'react-router-dom';
 import { User } from '@/types/user';
@@ -37,10 +36,14 @@ export default function ModalPart({
     e.preventDefault();
     let data = Object.fromEntries(new FormData(e.currentTarget));
 
-    data['isAdmin'] = isAdmin;
-
     try {
-      var response = await userLoginLab(data, id);
+      var response = await userLoginLab(
+        {
+          ...data,
+          isAdmin,
+        },
+        id
+      );
 
       setCurentUserData(response);
     } catch (error) {

@@ -34,7 +34,7 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
   );
 
   const onRemoveUser = async (id: string) => {
-    await invokeMethod('SendCodeChange', currentUser.joinedLabRoomId, id);
+    await invokeMethod('LeaveRoom', currentUser.joinedLabRoomId, id);
   };
 
   if (!currentUser?.isAdmin) {
@@ -95,6 +95,7 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
       className='h-40'
       selectedKeys={selectedKeys}
       selectionMode='single'
+      // @ts-ignore
       onSelectionChange={handleSelectedUser}>
       <TableHeader columns={columns}>
         {(column) => (

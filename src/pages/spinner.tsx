@@ -1,7 +1,7 @@
 import { Spacer, Card } from '@heroui/react';
 
 export const CustomCard = () => (
-  <Card className='w-[40vw] space-y-5 p-4' radius='2xl'>
+  <Card className='w-[40vw] space-y-5 p-4' radius='lg'>
     <div className='h-[100vh] rounded--30' />
     <div className='space-y-3'>
       <div className='h-3 w-3/5 rounded-lg' />

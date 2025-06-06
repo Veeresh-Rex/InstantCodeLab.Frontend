@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Spinner as Loader } from '@heroui/spinner';
 
@@ -9,7 +9,7 @@ import Spinner from './spinner';
 import ModalPart from '@/components/modal';
 import EditorLayout from '@/layouts/editorLayout';
 import { useSignalR } from '@/hooks/useSignalR';
-import { invokeMethod } from '@/services/signalRService';
+import { invokeMethod, stopConnection } from '@/services/signalRService';
 import { User } from '@/types/user';
 import { getRoom } from '@/services/labRoomService';
 import { GetRoomDto } from '@/types/labRoom';
@@ -18,6 +18,7 @@ import { title } from '@/components/primitives';
 import { saveUserInfo } from '@/services/userService';
 import { useApi } from '@/hooks/useApi';
 import { EditorView } from './editorView';
+import { useNavigate } from 'react-router-dom';
 
 const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -25,12 +26,13 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [pairedUser, setPairedUser] = useState<User | undefined>();
   const { id } = useParams();
+  const navigate = useNavigate();
+  const pairedUserRef = useRef<User | undefined>();
 
-  const {
-    data: currentRoom,
-    loading,
-    error,
-  } = useApi<GetRoomDto>(() => getRoom(id || ''), [id]);
+  const { data: currentRoom, loading } = useApi<GetRoomDto>(
+    () => getRoom(id || ''),
+    [id]
+  );
 
   // Receive code changes
   useSignalR<string>(
@@ -49,39 +51,50 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
 
   useSignalR<string>(
     'UserLeft',
-    useCallback((userId) => {
-      setAllUsers((prevUsers) =>
-        prevUsers.filter((user) => user.id !== userId)
-      );
-    }, [])
+    useCallback(
+      async (userId) => {
+        setAllUsers((prevUsers) =>
+          prevUsers.filter((user) => user.id !== userId)
+        );
+
+        if (currentUser?.id === userId) {
+          navigate('/');
+          await stopConnection();
+        }
+      },
+      [currentUser]
+    )
   );
 
   // Send code changes to server
-  const sendMessage = useCallback(
-    async (value: string | undefined) => {
-      if (value === undefined) return;
+  const sendMessage = async (value: string | undefined) => {
+    if (value === undefined) return;
 
-      setCode(value);
-      try {
-        if (connection) {
-          console.log('Sending code change: ', value);
-          await invokeMethod('SendCodeChange', pairedUser?.id, value);
-        }
-      } catch (error) {
-        console.error('Error sending message: ', error);
+    setCode(value);
+    try {
+      if (connection) {
+        console.log('User is paired with: ', pairedUserRef.current);
+        await invokeMethod('SendCodeChange', pairedUserRef.current?.id, value);
       }
-    },
-    [pairedUser]
-  );
+    } catch (error) {
+      console.error('Error sending message: ', error);
+    }
+  };
 
   // Handle active member selection
   const handleChangeUser = useCallback(
     async (activeUserSet: string) => {
       const connectedUser = allUsers.find((e) => e.id === activeUserSet);
-      await connection.invoke('SwitchToEditor', activeUserSet);
-      setPairedUser(connectedUser);
+      console.log('Connected User:', connectedUser);
+      try {
+        setPairedUser(connectedUser);
+        pairedUserRef.current = connectedUser;
+        await connection.invoke('SwitchToEditor', activeUserSet);
+      } catch (error) {
+        console.error('Error switching to editor:', error);
+      }
     },
-    [allUsers]
+    [allUsers, pairedUser]
   );
 
   // Set current user and code
@@ -139,7 +152,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
       users={allUsers}
       onChangeCode={sendMessage}
       onChangeUser={handleChangeUser}
-      pairedUser={pairedUser}
+      pairedUser={pairedUserRef.current}
     />
   );
 };
