@@ -99,6 +99,8 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const handleUserlogin = useCallback(async (response: User) => {
     setCurrentUser(response);
     setPairedUser(response);
+    pairedUserRef.current = response;
+
     setCode(response.code);
     saveUserInfo(response);
     await invokeMethod('UserJoined', response?.joinedLabRoomId, response.id);

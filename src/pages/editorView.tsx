@@ -21,12 +21,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
   onChangeCode,
   onChangeUser,
 }) => {
-  const handleEditorDidMount = (editor: any) => {
-    editor.onDidType(() => {
-      const fullContent = editor.getValue();
-      onChangeCode(fullContent);
-    });
-  };
 
   return (
     <EditorLayout
@@ -41,7 +35,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             height='93vh'
             theme='vs-dark'
             value={code}
-            onMount={handleEditorDidMount}
+            onChange={onChangeCode}
             options={{
               fontSize: 16,
               minimap: { enabled: true },
