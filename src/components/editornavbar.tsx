@@ -20,9 +20,13 @@ import { languages } from '@/constant/constant';
 export const EditorNavbar = ({
   userName,
   chatRoom,
+  handleCodeRunner,
+  handleCodeDownload,
 }: {
   userName: string;
   chatRoom: string;
+  handleCodeRunner?: () => void;
+  handleCodeDownload?: () => void;
 }) => {
   const getUser = getUserInfo();
 
@@ -73,12 +77,22 @@ export const EditorNavbar = ({
 
       <NavbarContent className='hidden sm:flex gap-4' justify='center'>
         <NavbarItem>
-          <Button isIconOnly as={Link} color='primary' href='#' variant='flat'>
+          <Button
+            isIconOnly
+            as={Link}
+            color='primary'
+            href='#'
+            onClick={handleCodeRunner}
+            variant='flat'>
             <Play />
           </Button>
         </NavbarItem>
         <NavbarItem>
-          <Button isIconOnly as={Link} color='success' href='#' variant='flat'>
+          <Button
+            isIconOnly
+            color='success'
+            onClick={handleCodeDownload}
+            variant='flat'>
             <Download />
           </Button>
         </NavbarItem>

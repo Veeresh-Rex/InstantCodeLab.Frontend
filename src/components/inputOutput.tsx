@@ -1,7 +1,12 @@
+import { CompileResponseDto } from '@/types/compiler';
 import { Textarea } from '@heroui/input';
 import { Tab, Tabs } from '@heroui/tabs';
 
-export const InputOutputTabs = () => {
+type InputOutputTabsProps = {
+  output?: CompileResponseDto | null;
+};
+
+export const InputOutputTabs: React.FC<InputOutputTabsProps> = ({ output }) => {
   return (
     <Tabs aria-label='Options'>
       <Tab key='Input' title='Input'>
@@ -23,6 +28,8 @@ export const InputOutputTabs = () => {
           }}
           placeholder='Read your output'
           variant='bordered'
+          value={output?.output || ''}
+          isInvalid={output?.isError}
         />
       </Tab>
     </Tabs>
