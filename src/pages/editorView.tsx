@@ -39,7 +39,13 @@ export const EditorView: React.FC<EditorViewProps> = ({
     setResponse(response);
   };
 
-  const handleCodeDownload = () => {};
+  const handleCodeDownload = () => {
+    const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "code.txt";
+    link.click();
+  };
 
   return (
     <EditorLayout

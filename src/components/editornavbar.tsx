@@ -13,9 +13,10 @@ import { Chip } from '@heroui/chip';
 import React from 'react';
 
 import { ThemeSwitch } from '@/components/theme-switch';
-import { stopConnection } from '@/services/signalRService';
+import { invokeMethod, stopConnection } from '@/services/signalRService';
 import { getUserInfo } from '@/services/userService';
 import { languages } from '@/constant/constant';
+import connection from '@/services/signalRClient';
 
 export const EditorNavbar = ({
   userName,
@@ -33,6 +34,16 @@ export const EditorNavbar = ({
   const [selectedKey, setSelectedKey] = React.useState<string>(
     languages[0].key
   );
+
+  const deleteRoom = async () => {
+    try {
+      if (connection) {
+        await invokeMethod('DeleteRoom', getUser?.joinedLabRoomId);
+      }
+    } catch (error) {
+      console.error('Error sending message: ', error);
+    }
+  };
 
   return (
     <Navbar>
@@ -118,16 +129,18 @@ export const EditorNavbar = ({
               <p className='font-semibold'>Signed in as</p>
               <p className='font-semibold'>{userName}</p>
             </DropdownItem>
-            <DropdownItem
-              key='deleteroom'
-              as={Link}
-              className={'text-danger'}
-              color='danger'
-              href='/'
-              startContent={<Trash2 />}
-              onClick={stopConnection}>
-              Delete Room
-            </DropdownItem>
+            {getUser?.isAdmin ? (
+              <DropdownItem
+                key='deleteroom'
+                as={Link}
+                className={'text-danger'}
+                color='danger'
+                href='/'
+                startContent={<Trash2 />}
+                onClick={deleteRoom}>
+                Delete Room
+              </DropdownItem>
+            ) : null}
             <DropdownItem
               key='logout'
               as={Link}

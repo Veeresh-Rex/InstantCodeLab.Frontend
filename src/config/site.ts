@@ -11,11 +11,7 @@ export const siteConfig = {
     },
     {
       label: 'FQA',
-      href: '/faq',
-    },
-    {
-      label: 'Editor',
-      href: '/editor',
+      href: '/fqa',
     },
     {
       label: 'About',
@@ -29,7 +25,7 @@ export const siteConfig = {
     },
     {
       label: 'FQA',
-      href: '/faq',
+      href: '/fqa',
     },
     {
       label: 'About',
