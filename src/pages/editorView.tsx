@@ -70,7 +70,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   }, [awareness, currentUser]);
   // Send local changes to other clients via SignalR
   useEffect(() => {
-    const observer = (event: Y.YTextEvent, transaction: Y.Transaction) => {
+    const observer = (_event: Y.YTextEvent, transaction: Y.Transaction) => {
       if (transaction.origin === 'remote') return;
 
       if (connection) {
