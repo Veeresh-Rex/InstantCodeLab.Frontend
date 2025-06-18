@@ -70,6 +70,8 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const sendMessage = async (value: string | undefined) => {
     if (value === undefined) return;
 
+    console.log('Sending code change:', value);
+
     setCode(value);
     try {
       if (connection) {

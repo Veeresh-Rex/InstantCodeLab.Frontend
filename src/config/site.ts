@@ -11,7 +11,7 @@ export const siteConfig = {
     },
     {
       label: 'FQA',
-      href: '/fqa',
+      href: '/faq',
     },
     {
       label: 'About',
@@ -25,7 +25,7 @@ export const siteConfig = {
     },
     {
       label: 'FQA',
-      href: '/fqa',
+      href: '/faq',
     },
     {
       label: 'About',

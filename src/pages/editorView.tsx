@@ -28,8 +28,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const [response, setResponse] = useState<CompileResponseDto | null>();
 
   const HandleCodeRunner = async () => {
-    console.log('Running code...', code);
-
     const response = await compileTheCode({
       code,
       stdinInput: '',
