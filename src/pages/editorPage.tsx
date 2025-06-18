@@ -2,8 +2,6 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Spinner as Loader } from '@heroui/spinner';
 
-import connection from '../services/signalRClient';
-
 import Spinner from './spinner';
 
 import ModalPart from '@/components/modal';
@@ -22,24 +20,14 @@ import { useNavigate } from 'react-router-dom';
 
 const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [code, setCode] = useState<string>('');
   const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [pairedUser, setPairedUser] = useState<User | undefined>();
   const { id } = useParams();
   const navigate = useNavigate();
-  const pairedUserRef = useRef<User | undefined>();
+  const [pairedUser, setPairedUser] = useState<User | undefined>();
 
   const { data: currentRoom, loading } = useApi<GetRoomDto>(
     () => getRoom(id || ''),
     [id]
-  );
-
-  // Receive code changes
-  useSignalR<string>(
-    'ReceiveCodeChange',
-    useCallback((newCode) => {
-      setCode(newCode);
-    }, [])
   );
 
   useSignalR<User[]>(
@@ -66,47 +54,16 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
     )
   );
 
-  // Send code changes to server
-  const sendMessage = async (value: string | undefined) => {
-    if (value === undefined) return;
-
-    console.log('Sending code change:', value);
-
-    setCode(value);
-    try {
-      if (connection) {
-        await invokeMethod('SendCodeChange', pairedUserRef.current?.id, value);
-      }
-    } catch (error) {
-      console.error('Error sending message: ', error);
-    }
-  };
-
-  // Handle active member selection
-  const handleChangeUser = useCallback(
-    async (activeUserSet: string) => {
-      const connectedUser = allUsers.find((e) => e.id === activeUserSet);
-      try {
-        setPairedUser(connectedUser);
-        pairedUserRef.current = connectedUser;
-        await connection.invoke('SwitchToEditor', activeUserSet);
-      } catch (error) {
-        console.error('Error switching to editor:', error);
-      }
-    },
-    [allUsers, pairedUser]
-  );
-
   // Set current user and code
-  const handleUserlogin = useCallback(async (response: User) => {
-    setCurrentUser(response);
-    setPairedUser(response);
-    pairedUserRef.current = response;
-
-    setCode(response.code);
-    saveUserInfo(response);
-    await invokeMethod('UserJoined', response?.joinedLabRoomId, response.id);
-  }, []);
+  const handleUserlogin = useCallback(
+    async (response: User) => {
+      setCurrentUser(response);
+      setPairedUser(response);
+      saveUserInfo(response);
+      await invokeMethod('UserJoined', response?.joinedLabRoomId, response.id);
+    },
+    [pairedUser]
+  );
 
   if (loading) {
     return (
@@ -149,12 +106,10 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
 
   return (
     <EditorView
-      code={code}
       currentUser={currentUser}
       users={allUsers}
-      onChangeCode={sendMessage}
-      onChangeUser={handleChangeUser}
-      pairedUser={pairedUserRef.current}
+      setPairedUser={setPairedUser}
+      pairedUser={pairedUser}
     />
   );
 };
