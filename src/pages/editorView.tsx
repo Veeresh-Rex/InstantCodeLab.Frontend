@@ -42,15 +42,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
     'ReceiveCodeChange',
     useCallback((updatedCode) => {
       const binaryUpdate = new Uint8Array(updatedCode);
-      console.log('Received code update from server');
-
-      Y.transact(
-        ydoc,
-        () => {
-          Y.applyUpdate(ydoc, binaryUpdate);
-        },
-        'remote'
-      );
+      var string = new TextDecoder().decode(binaryUpdate);
+      console.log('Received code update from server: ', string);
+      Y.applyUpdate(ydoc, binaryUpdate);
     }, [])
   );
 
@@ -58,7 +52,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
     if (!connection) return;
 
     const handleUpdate = (update: Uint8Array) => {
-      console.log('Sending code update to server');
+      var string = new TextDecoder().decode(update);
+      console.log('Sending code update to server: ', string);
+      
       connection.invoke(
         'SendCodeChange',
         pairedUserRef.current?.id,
