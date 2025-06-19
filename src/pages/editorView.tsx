@@ -1,4 +1,4 @@
-import Editor, { OnChange } from '@monaco-editor/react';
+import Editor, { OnMount } from '@monaco-editor/react';
 import ActiveMembers from '@/pages/activeMembers';
 import { InputOutputTabs } from '@/components/inputOutput';
 import EditorLayout from '@/layouts/editorLayout';
@@ -11,7 +11,6 @@ import * as Y from 'yjs';
 import { useSignalR } from '@/hooks/useSignalR';
 import connection from '@/services/signalRClient';
 import { MonacoBinding } from 'y-monaco';
-import { Awareness } from 'y-protocols/awareness.js';
 
 type EditorViewProps = {
   currentUser: User;
@@ -27,10 +26,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
   setPairedUser,
 }) => {
   const ydoc = useMemo(() => new Y.Doc(), []);
-  const ytext = useMemo(() => ydoc.getText('shared'), [ydoc]);
-  const awareness = useMemo(() => new Awareness(ydoc), [ydoc]);
   const monacoEditorRef = useRef<any>(null);
-  const bindingRef = useRef<MonacoBinding | null>(null);
+
   const [response, setResponse] = useState<CompileResponseDto | null>();
   const lastValueRef = useRef<string>('');
   const pairedUserRef = useRef<User | undefined>(pairedUser);
@@ -58,52 +55,30 @@ export const EditorView: React.FC<EditorViewProps> = ({
   );
 
   useEffect(() => {
-    awareness.setLocalStateField('user', {
-      id: currentUser.id,
-      name: currentUser.username,
-      color: '#ff5c5c',
-    });
+    if (!connection) return;
+
+    const handleUpdate = (update: Uint8Array) => {
+      console.log('Sending code update to server');
+      connection.invoke(
+        'SendCodeChange',
+        pairedUserRef.current?.id,
+        Array.from(update)
+      );
+    };
+
+    ydoc.on('update', handleUpdate);
 
     return () => {
-      awareness.setLocalState(null);
+      ydoc.off('update', handleUpdate);
     };
-  }, [awareness, currentUser]);
-  // Send local changes to other clients via SignalR
-  useEffect(() => {
-    const observer = (_event: Y.YTextEvent, transaction: Y.Transaction) => {
-      if (transaction.origin === 'remote') return;
+  }, [connection, ydoc]);
 
-      if (connection) {
-        const update = Y.encodeStateAsUpdate(ydoc);
-        console.log('Sending code update to server');
-        connection.invoke(
-          'SendCodeChange',
-          pairedUserRef.current?.id,
-          Array.from(update)
-        );
-      }
-    };
+  const handleEditorMount: OnMount = (editor, _monacoInstance) => {
+    monacoEditorRef.current = editor;
 
-    ytext.observe(observer);
-    return () => ytext.unobserve(observer);
-  }, []);
+    const yText = ydoc.getText('instantcodelab');
 
-  const handleEditorMount = (editorInstance: any) => {
-    monacoEditorRef.current = editorInstance;
-
-    const binding = new MonacoBinding(
-      ytext,
-      editorInstance.getModel(),
-      new Set([editorInstance]),
-      awareness // no awareness since we're not using y-websocket
-    );
-    bindingRef.current = binding;
-    editorInstance.onDidChangeCursorSelection((event: any) => {
-      awareness.setLocalStateField('cursor', {
-        start: event.selection.startPosition,
-        end: event.selection.endPosition,
-      });
-    });
+    new MonacoBinding(yText, editor.getModel()!, new Set([editor]), null);
   };
 
   // Handle active member selection
@@ -120,15 +95,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
     },
     [users, pairedUser]
   );
-
-  const handleEditorChange: OnChange = (value) => {
-    const editorValue = value ?? '';
-    if (editorValue !== ytext.toString()) {
-      ytext.delete(0, ytext.length);
-      ytext.insert(0, editorValue);
-      lastValueRef.current = editorValue;
-    }
-  };
 
   const HandleCodeRunner = async () => {
     const response = await compileTheCode({
@@ -164,7 +130,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
             defaultPath='file.js'
             height='93vh'
             theme='vs-dark'
-            onChange={handleEditorChange}
             onMount={handleEditorMount}
             options={{
               fontSize: 16,
