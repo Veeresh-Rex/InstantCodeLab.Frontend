@@ -24,5 +24,10 @@ export const offEvent = (eventName: string) => {
 };
 
 export const stopConnection = async () => {
+  console.log('Stop connection triggerd');
   await connection.stop();
+};
+
+export const onReConnect = async () => {
+  await connection.onreconnected(() => {});
 };

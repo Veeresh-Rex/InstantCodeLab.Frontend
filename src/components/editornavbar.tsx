@@ -14,9 +14,11 @@ import React from 'react';
 
 import { ThemeSwitch } from '@/components/theme-switch';
 import { invokeMethod, stopConnection } from '@/services/signalRService';
-import { getUserInfo } from '@/services/userService';
+import { clearUserInfo, getUserInfo } from '@/services/userService';
 import { languages } from '@/constant/constant';
 import connection from '@/services/signalRClient';
+import { addToast } from '@heroui/react';
+import { useNavigate } from 'react-router-dom';
 
 export const EditorNavbar = ({
   userName,
@@ -30,6 +32,7 @@ export const EditorNavbar = ({
   handleCodeDownload?: () => void;
 }) => {
   const getUser = getUserInfo();
+  const navigate = useNavigate();
 
   const [selectedKey, setSelectedKey] = React.useState<string>(
     languages[0].key
@@ -39,9 +42,33 @@ export const EditorNavbar = ({
     try {
       if (connection) {
         await invokeMethod('DeleteRoom', getUser?.joinedLabRoomId);
+        await stopConnection();
+        addToast({
+          title: 'Room deleted successfully',
+          variant: 'solid',
+          color: 'success',
+        });
+        navigate('/');
       }
     } catch (error) {
       console.error('Error sending message: ', error);
+    }
+  };
+
+  const stopSocketConnection = async () => {
+    try {
+      if (connection) {
+        await stopConnection();
+        clearUserInfo();
+        addToast({
+          title: 'You left the successfully',
+          variant: 'solid',
+          color: 'success',
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error stopping connection: ', error);
     }
   };
 
@@ -132,10 +159,8 @@ export const EditorNavbar = ({
             {getUser?.isAdmin ? (
               <DropdownItem
                 key='deleteroom'
-                as={Link}
                 className={'text-danger'}
                 color='danger'
-                href='/'
                 startContent={<Trash2 />}
                 onClick={deleteRoom}>
                 Delete Room
@@ -143,12 +168,10 @@ export const EditorNavbar = ({
             ) : null}
             <DropdownItem
               key='logout'
-              as={Link}
               className={'text-danger'}
               color='danger'
-              href='/'
               startContent={<LogOut />}
-              onClick={stopConnection}>
+              onClick={stopSocketConnection}>
               Log Out
             </DropdownItem>
           </DropdownMenu>

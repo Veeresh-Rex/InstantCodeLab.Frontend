@@ -1,4 +1,4 @@
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 import ActiveMembers from '@/pages/activeMembers';
 import { InputOutputTabs } from '@/components/inputOutput';
 import EditorLayout from '@/layouts/editorLayout';
@@ -6,16 +6,18 @@ import { User } from '@/types/userTypes';
 import { CompileResponseDto } from '@/types/compiler';
 import { compileTheCode } from '@/services/compilerService';
 import { LanguageCode } from '@/constant/enums';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as Y from 'yjs';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSignalR } from '@/hooks/useSignalR';
 import connection from '@/services/signalRClient';
-import { MonacoBinding } from 'y-monaco';
+import { stopConnection } from '@/services/signalRService';
+import { useNavigate } from 'react-router-dom';
+import { addToast } from '@heroui/react';
 
 type EditorViewProps = {
   currentUser: User;
   pairedUser?: User;
   users: User[];
+  setAllUsers: (user: User[]) => void;
   setPairedUser: (user: User | undefined) => void;
 };
 
@@ -23,14 +25,18 @@ export const EditorView: React.FC<EditorViewProps> = ({
   currentUser,
   pairedUser,
   users,
+  setAllUsers,
   setPairedUser,
 }) => {
-  const ydoc = useMemo(() => new Y.Doc(), []);
-  const monacoEditorRef = useRef<any>(null);
-
   const [response, setResponse] = useState<CompileResponseDto | null>();
   const lastValueRef = useRef<string>('');
   const pairedUserRef = useRef<User | undefined>(pairedUser);
+  const editorRef = useRef<any>(null);
+  const suppressNextChangeRef = useRef(false);
+  const navigate = useNavigate();
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
+    new Set([currentUser.id])
+  );
 
   // Keep pairedUserRef in sync with prop
   useEffect(() => {
@@ -38,55 +44,81 @@ export const EditorView: React.FC<EditorViewProps> = ({
   }, [pairedUser]);
 
   // Receive code changes
-  useSignalR<number[]>(
+  useSignalR<string>(
     'ReceiveCodeChange',
     useCallback((updatedCode) => {
-      const binaryUpdate = new Uint8Array(updatedCode);
-      var string = new TextDecoder().decode(binaryUpdate);
-      console.log('Received code update from server: ', string);
-      Y.applyUpdate(ydoc, binaryUpdate);
+      if (editorRef.current) {
+        suppressNextChangeRef.current = true;
+        editorRef.current.setValue(updatedCode);
+      }
+      lastValueRef.current = updatedCode;
     }, [])
   );
 
-  useEffect(() => {
-    if (!connection) return;
+  useSignalR<string>(
+    'UserLeft',
+    useCallback(
+      async (userId) => {
+        const leftUser = users.find((user) => user.id === userId);
+        const IsYouRemoved = currentUser?.id === userId;
 
-    const handleUpdate = (update: Uint8Array) => {
-      var string = new TextDecoder().decode(update);
-      console.log('Sending code update to server: ', string);
-      
-      connection.invoke(
-        'SendCodeChange',
-        pairedUserRef.current?.id,
-        Array.from(update)
-      );
-    };
+        if (IsYouRemoved) {
+          addToast({
+            color: 'danger',
+            title: 'You have been removed',
+            description: `You have been removed from the session by the admin.`,
+          });
+          await stopConnection();
+          navigate('/');
+          return;
+        }
 
-    ydoc.on('update', handleUpdate);
+        addToast({
+          color: 'warning',
+          title: 'User Left',
+          description: `User ${leftUser?.username} has left the session.`,
+        });
 
-    return () => {
-      ydoc.off('update', handleUpdate);
-    };
-  }, [connection, ydoc]);
+        setSelectedKeys(new Set([currentUser.id]));
+        const updatedUser = users.filter((user) => user.id !== userId);
+        setAllUsers(updatedUser);
+      },
+      [currentUser, users]
+    )
+  );
 
-  const handleEditorMount: OnMount = (editor, _monacoInstance) => {
-    monacoEditorRef.current = editor;
-
-    const yText = ydoc.getText('instantcodelab');
-
-    new MonacoBinding(yText, editor.getModel()!, new Set([editor]), null);
-  };
+  function sendUpdatedText(value?: string): void {
+    if (suppressNextChangeRef.current) {
+      suppressNextChangeRef.current = false;
+      return;
+    }
+    lastValueRef.current = value || '';
+    connection.invoke('SendCodeChange', pairedUserRef.current?.id, value);
+  }
 
   // Handle active member selection
   const handleChangeUser = useCallback(
-    async (activeUserSet: string) => {
-      const connectedUser = users.find((e) => e.id === activeUserSet);
+    async (activeUserSet: Set<string>) => {
+      const connectedUser = users.find(
+        (e) => e.id === (Array.from(activeUserSet)[0] || currentUser.id)
+      );
+      console.log('Switching to user:');
+      setSelectedKeys(activeUserSet);
       try {
         setPairedUser(connectedUser);
         pairedUserRef.current = connectedUser;
-        await connection.invoke('SwitchToEditor', activeUserSet);
+        await connection.invoke('SwitchToEditor', connectedUser?.id);
+        addToast({
+          color: 'success',
+          title: 'Switched Editor to ' + connectedUser?.username,
+        });
       } catch (error) {
-        console.error('Error switching to editor:', error);
+        addToast({
+          color: 'danger',
+          title: 'Error from server',
+          description: 'Failed to switch editor',
+        });
+        setSelectedKeys(new Set([currentUser.id]));
       }
     },
     [users, pairedUser]
@@ -98,7 +130,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
       stdinInput: '',
       language: LanguageCode.NodeJs,
     });
-    console.log('Code run response:', response);
     setResponse(response);
   };
 
@@ -126,7 +157,10 @@ export const EditorView: React.FC<EditorViewProps> = ({
             defaultPath='file.js'
             height='93vh'
             theme='vs-dark'
-            onMount={handleEditorMount}
+            onChange={sendUpdatedText}
+            onMount={(editor) => {
+              editorRef.current = editor;
+            }}
             options={{
               fontSize: 16,
               minimap: { enabled: true },
@@ -148,6 +182,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
               currentUser={currentUser}
               handleChangeUser={handleChangeUser}
               users={users}
+              selectedKeys={selectedKeys}
             />
           </div>
         </div>

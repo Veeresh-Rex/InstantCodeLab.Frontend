@@ -7,7 +7,7 @@ import Spinner from './spinner';
 import ModalPart from '@/components/modal';
 import EditorLayout from '@/layouts/editorLayout';
 import { useSignalR } from '@/hooks/useSignalR';
-import { invokeMethod, stopConnection } from '@/services/signalRService';
+import { invokeMethod } from '@/services/signalRService';
 import { User } from '@/types/userTypes';
 import { getRoom } from '@/services/labRoomService';
 import { GetRoomDto } from '@/types/labRoom';
@@ -16,13 +16,11 @@ import { title } from '@/components/primitives';
 import { saveUserInfo } from '@/services/userService';
 import { useApi } from '@/hooks/useApi';
 import { EditorView } from './editorView';
-import { useNavigate } from 'react-router-dom';
 
 const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const { id } = useParams();
-  const navigate = useNavigate();
   const [pairedUser, setPairedUser] = useState<User | undefined>();
 
   const { data: currentRoom, loading } = useApi<GetRoomDto>(
@@ -35,23 +33,6 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
     useCallback((joinedUsers) => {
       setAllUsers(joinedUsers);
     }, [])
-  );
-
-  useSignalR<string>(
-    'UserLeft',
-    useCallback(
-      async (userId) => {
-        setAllUsers((prevUsers) =>
-          prevUsers.filter((user) => user.id !== userId)
-        );
-
-        if (currentUser?.id === userId) {
-          navigate('/');
-          await stopConnection();
-        }
-      },
-      [currentUser]
-    )
   );
 
   // Set current user and code
@@ -109,6 +90,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
       currentUser={currentUser}
       users={allUsers}
       setPairedUser={setPairedUser}
+      setAllUsers={setAllUsers}
       pairedUser={pairedUser}
     />
   );

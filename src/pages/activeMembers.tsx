@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   Table,
   TableHeader,
@@ -15,8 +15,9 @@ import { invokeMethod } from '@/services/signalRService';
 
 interface ActiveMembersProps {
   users: User[];
-  handleChangeUser: (selectedUserIds: string) => void;
+  handleChangeUser: (selectedUserIds: Set<string>) => void;
   currentUser: User;
+  selectedKeys: Set<string>;
 }
 
 const columns = [
@@ -28,11 +29,8 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
   users,
   handleChangeUser,
   currentUser,
+  selectedKeys,
 }) => {
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([currentUser.id])
-  );
-
   const onRemoveUser = async (id: string) => {
     await invokeMethod('LeaveRoom', currentUser.joinedLabRoomId, id);
   };
@@ -80,14 +78,6 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
     [onRemoveUser]
   );
 
-  const handleSelectedUser = useCallback(
-    (activeUserSet: Set<string>) => {
-      setSelectedKeys(activeUserSet);
-      handleChangeUser(Array.from(activeUserSet)[0] || '');
-    },
-    [handleChangeUser]
-  );
-
   return (
     <Table
       removeWrapper
@@ -96,7 +86,7 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
       selectedKeys={selectedKeys}
       selectionMode='single'
       // @ts-ignore
-      onSelectionChange={handleSelectedUser}>
+      onSelectionChange={handleChangeUser}>
       <TableHeader columns={columns}>
         {(column) => (
           <TableColumn
