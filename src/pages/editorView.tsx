@@ -83,8 +83,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
         description: `The language has been changed to ${updatedLanguage}.`,
       });
 
-      console.log('Language changed to: ', updatedLanguage);
-
       setLanguage(updatedLanguage);
     }, [])
   );

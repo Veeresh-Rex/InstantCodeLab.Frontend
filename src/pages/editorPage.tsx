@@ -71,7 +71,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
       </DefaultLayout>
     );
   }
-console.log('currentRoom', currentRoom);
+  
   if (!currentUser) {
     return (
       <EditorLayout
