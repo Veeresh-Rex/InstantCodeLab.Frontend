@@ -1,7 +1,7 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: 'InstantCodeLabe',
+  name: 'InstantCodeLab',
   description:
     'Real-time coding sessions with code execution for interviews, lessons, and collaborative development.',
   navItems: [

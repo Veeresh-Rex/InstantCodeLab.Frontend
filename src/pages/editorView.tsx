@@ -12,6 +12,8 @@ import connection from '@/services/signalRClient';
 import { stopConnection } from '@/services/signalRService';
 import { useNavigate } from 'react-router-dom';
 import { addToast } from '@heroui/react';
+import { clearUserInfo } from '@/services/userService';
+import { mapToMonacoLanguage } from '@/constant/constant';
 
 type EditorViewProps = {
   currentUser: User;
@@ -19,6 +21,7 @@ type EditorViewProps = {
   users: User[];
   setAllUsers: (user: User[]) => void;
   setPairedUser: (user: User | undefined) => void;
+  languageCode: LanguageCode;
 };
 
 export const EditorView: React.FC<EditorViewProps> = ({
@@ -27,9 +30,11 @@ export const EditorView: React.FC<EditorViewProps> = ({
   users,
   setAllUsers,
   setPairedUser,
+  languageCode,
 }) => {
   const [response, setResponse] = useState<CompileResponseDto | null>();
   const lastValueRef = useRef<string>('');
+  const [language, setLanguage] = useState<LanguageCode>(languageCode);
   const pairedUserRef = useRef<User | undefined>(pairedUser);
   const editorRef = useRef<any>(null);
   const suppressNextChangeRef = useRef(false);
@@ -52,6 +57,35 @@ export const EditorView: React.FC<EditorViewProps> = ({
         editorRef.current.setValue(updatedCode);
       }
       lastValueRef.current = updatedCode;
+    }, [])
+  );
+
+  useSignalR<null>(
+    'RoomIsDeleted',
+    useCallback(() => {
+      clearUserInfo();
+      addToast({
+        color: 'danger',
+        title: 'Room Deleted',
+        description: 'The room you were in has been deleted.',
+      });
+      stopConnection();
+      navigate('/');
+    }, [])
+  );
+
+  useSignalR<LanguageCode>(
+    'LanguageChanged',
+    useCallback((updatedLanguage) => {
+      addToast({
+        color: 'warning',
+        title: 'Language Changed',
+        description: `The language has been changed to ${updatedLanguage}.`,
+      });
+
+      console.log('Language changed to: ', updatedLanguage);
+
+      setLanguage(updatedLanguage);
     }, [])
   );
 
@@ -102,7 +136,6 @@ export const EditorView: React.FC<EditorViewProps> = ({
       const connectedUser = users.find(
         (e) => e.id === (Array.from(activeUserSet)[0] || currentUser.id)
       );
-      console.log('Switching to user:');
       setSelectedKeys(activeUserSet);
       try {
         setPairedUser(connectedUser);
@@ -149,11 +182,12 @@ export const EditorView: React.FC<EditorViewProps> = ({
       userName={currentUser.username}
       showNavbar={true}
       handleCodeRunner={HandleCodeRunner}
-      handleCodeDownload={handleCodeDownload}>
+      handleCodeDownload={handleCodeDownload}
+      languageCode={language}>
       <div className='flex flex-row'>
         <div className='basis-5/6 mr-2'>
           <Editor
-            defaultLanguage='javascript'
+            defaultLanguage={mapToMonacoLanguage(language)}
             defaultPath='file.js'
             height='93vh'
             theme='vs-dark'

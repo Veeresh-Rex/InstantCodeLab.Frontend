@@ -10,33 +10,35 @@ import {
 import { Link } from '@heroui/link';
 import { Download, Play, LogOut, Trash2 } from 'lucide-react';
 import { Chip } from '@heroui/chip';
-import React from 'react';
 
 import { ThemeSwitch } from '@/components/theme-switch';
 import { invokeMethod, stopConnection } from '@/services/signalRService';
 import { clearUserInfo, getUserInfo } from '@/services/userService';
-import { languages } from '@/constant/constant';
 import connection from '@/services/signalRClient';
-import { addToast } from '@heroui/react';
+import { addToast, SharedSelection } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
+import { LanguageCode } from '@/constant/enums';
 
 export const EditorNavbar = ({
   userName,
   chatRoom,
   handleCodeRunner,
   handleCodeDownload,
+  languageCode,
 }: {
   userName: string;
   chatRoom: string;
   handleCodeRunner?: () => void;
   handleCodeDownload?: () => void;
+  languageCode: LanguageCode;
 }) => {
   const getUser = getUserInfo();
   const navigate = useNavigate();
 
-  const [selectedKey, setSelectedKey] = React.useState<string>(
-    languages[0].key
-  );
+  const languages = Object.entries(LanguageCode).map(([label, key]) => ({
+    key,
+    label,
+  }));
 
   const deleteRoom = async () => {
     try {
@@ -51,25 +53,30 @@ export const EditorNavbar = ({
         navigate('/');
       }
     } catch (error) {
-      console.error('Error sending message: ', error);
+      addToast({
+        title: 'Failed to delete room',
+        variant: 'solid',
+        color: 'danger',
+      });
     }
   };
 
-  const stopSocketConnection = async () => {
-    try {
-      if (connection) {
-        await stopConnection();
-        clearUserInfo();
-        addToast({
-          title: 'You left the successfully',
-          variant: 'solid',
-          color: 'success',
-        });
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Error stopping connection: ', error);
+  const handleLanguageChange = (selectedKeys: SharedSelection) => {
+    const selectedKey = Array.from(selectedKeys)[0];
+    if (selectedKey) {
+      invokeMethod('ChangeLanguage', selectedKey, getUser?.joinedLabRoomId);
     }
+  };
+
+  const logoutUser = async () => {
+    await stopConnection();
+    clearUserInfo();
+    addToast({
+      title: 'You left the successfully',
+      variant: 'solid',
+      color: 'success',
+    });
+    navigate('/');
   };
 
   return (
@@ -83,19 +90,17 @@ export const EditorNavbar = ({
             <Dropdown>
               <DropdownTrigger>
                 <Button color='secondary' size='sm' variant='bordered'>
-                  {languages.find((e) => e.key === selectedKey)?.label}
+                  {languageCode.toUpperCase()}
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
                 aria-label='Single selection example'
                 items={languages}
-                selectedKeys={selectedKey}
+                selectedKeys={new Set([languageCode])}
                 selectionMode='single'
                 variant='flat'
-                onSelectionChange={(keys) => {
-                  setSelectedKey(keys as string);
-                }}>
+                onSelectionChange={handleLanguageChange}>
                 {(item) => (
                   <DropdownItem key={item.key}>{item.label}</DropdownItem>
                 )}
@@ -107,7 +112,7 @@ export const EditorNavbar = ({
               color='secondary'
               size='sm'
               variant='bordered'>
-              Javascript
+              {languageCode.toUpperCase()}
             </Chip>
           )}
         </NavbarItem>
@@ -171,7 +176,7 @@ export const EditorNavbar = ({
               className={'text-danger'}
               color='danger'
               startContent={<LogOut />}
-              onClick={stopSocketConnection}>
+              onClick={logoutUser}>
               Log Out
             </DropdownItem>
           </DropdownMenu>

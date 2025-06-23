@@ -60,20 +60,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
     );
   }
 
-  if (!currentUser) {
-    return (
-      <EditorLayout showNavbar chatRoom='' userName=''>
-        <ModalPart
-          isAdmin={IsAdmin}
-          roomDetails={currentRoom}
-          setCurentUserData={handleUserlogin}
-        />
-        <Spinner />
-      </EditorLayout>
-    );
-  }
-
-  if (!currentRoom) {
+  if (currentRoom === null || currentRoom === undefined) {
     return (
       <DefaultLayout>
         <section className='flex flex-col items-center justify-center gap-4 py-8 md:py-10'>
@@ -84,6 +71,23 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
       </DefaultLayout>
     );
   }
+console.log('currentRoom', currentRoom);
+  if (!currentUser) {
+    return (
+      <EditorLayout
+        showNavbar
+        chatRoom=''
+        userName=''
+        languageCode={currentRoom.language}>
+        <ModalPart
+          isAdmin={IsAdmin}
+          roomDetails={currentRoom}
+          setCurentUserData={handleUserlogin}
+        />
+        <Spinner />
+      </EditorLayout>
+    );
+  }
 
   return (
     <EditorView
@@ -92,6 +96,7 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
       setPairedUser={setPairedUser}
       setAllUsers={setAllUsers}
       pairedUser={pairedUser}
+      languageCode={currentRoom.language}
     />
   );
 };

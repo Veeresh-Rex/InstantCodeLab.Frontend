@@ -1,3 +1,5 @@
+import { LanguageCode } from "@/constant/enums";
+
 export interface RoomRequestDto {
   labName: string;
   password: string | null;
@@ -14,4 +16,5 @@ export interface GetRoomDto{
   labName : string,
   isRoomPasswordEnabled : boolean,
   isAdminPinEnabled : boolean,
+  language: LanguageCode
 }

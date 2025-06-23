@@ -1,4 +1,5 @@
 import { EditorNavbar } from '@/components/editornavbar';
+import { LanguageCode } from '@/constant/enums';
 
 export default function EditorLayout({
   children,
@@ -7,6 +8,7 @@ export default function EditorLayout({
   showNavbar = true,
   handleCodeRunner,
   handleCodeDownload,
+  languageCode,
 }: {
   children: React.ReactNode;
   userName: string | undefined;
@@ -14,6 +16,7 @@ export default function EditorLayout({
   showNavbar: boolean;
   handleCodeRunner?: () => void;
   handleCodeDownload?: () => void;
+  languageCode: LanguageCode;
 }) {
   return (
     <div className='flex flex-col h-screen'>
@@ -24,6 +27,7 @@ export default function EditorLayout({
             chatRoom={chatRoom ?? ''}
             handleCodeRunner={handleCodeRunner}
             handleCodeDownload={handleCodeDownload}
+            languageCode={languageCode}
           />
         )}
         <main className='w-screen'>{children}</main>

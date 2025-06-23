@@ -3,7 +3,6 @@ import connection from './signalRClient';
 export const startConnection = async () => {
   if (connection.state === 'Disconnected') {
     await connection.start();
-    console.log('SignalR Connected');
   }
 };
 
@@ -11,7 +10,6 @@ export const invokeMethod = async (method: string, ...args: any[]) => {
   try {
     await connection.invoke(method, ...args);
   } catch (error) {
-    console.error(`Invoke ${method} failed:`, error);
   }
 };
 
@@ -24,10 +22,5 @@ export const offEvent = (eventName: string) => {
 };
 
 export const stopConnection = async () => {
-  console.log('Stop connection triggerd');
   await connection.stop();
-};
-
-export const onReConnect = async () => {
-  await connection.onreconnected(() => {});
 };
