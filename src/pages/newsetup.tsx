@@ -13,6 +13,7 @@ import { Snippet } from '@heroui/snippet';
 export default function App() {
   const [roomResponse, setRoomResponse] =
     React.useState<RoomResponseDto | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   return (
     <DefaultLayout>
@@ -30,6 +31,7 @@ export default function App() {
                   const email = data.email as string;
                   const adminpin = data.adminpin as string;
 
+                  setIsLoading(true);
                   try {
                     var res = await createLab({
                       labName: Labname,
@@ -39,6 +41,8 @@ export default function App() {
                     setRoomResponse(res);
                   } catch (error) {
                     return;
+                  } finally {
+                    setIsLoading(false);
                   }
                 }}>
                 <Input
@@ -66,7 +70,7 @@ export default function App() {
                     type='password'
                   />
                 </div>
-                <Button color='primary' type='submit'>
+                <Button color='primary' type='submit' isLoading={isLoading}>
                   Submit
                 </Button>
               </Form>

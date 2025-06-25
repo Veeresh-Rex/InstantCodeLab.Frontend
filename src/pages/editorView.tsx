@@ -156,14 +156,24 @@ export const EditorView: React.FC<EditorViewProps> = ({
   );
 
   const HandleCodeRunner = async () => {
-    const response = await compileTheCode({
-      code: lastValueRef.current,
-      stdinInput: '',
-      language: LanguageCode.NodeJs,
-    });
-    setResponse(response);
-  };
+    try {
+      const response = await compileTheCode({
+        code: lastValueRef.current,
+        stdinInput: '',
+        language: LanguageCode.NodeJs,
+      });
+      setResponse(response);
 
+      addToast({
+        title: response.isError
+          ? 'Code executed with errors'
+          : 'Code executed successfully',
+        variant: 'solid',
+        color: response.isError ? 'warning' : 'success',
+      });
+    } catch (ex) {}
+  };
+  
   const handleCodeDownload = () => {
     const blob = new Blob([lastValueRef.current], {
       type: 'text/plain;charset=utf-8',

@@ -15,10 +15,11 @@ import { ThemeSwitch } from '@/components/theme-switch';
 import { invokeMethod, stopConnection } from '@/services/signalRService';
 import { clearUserInfo, getUserInfo } from '@/services/userService';
 import connection from '@/services/signalRClient';
-import { addToast, SharedSelection } from '@heroui/react';
+import { addToast, SharedSelection, Spinner } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { LanguageCode } from '@/constant/enums';
 import { Tooltip } from '@heroui/react';
+import { useState } from 'react';
 
 export const EditorNavbar = ({
   userName,
@@ -35,6 +36,7 @@ export const EditorNavbar = ({
 }) => {
   const getUser = getUserInfo();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const languages = Object.entries(LanguageCode).map(([label, key]) => ({
     key,
@@ -78,6 +80,23 @@ export const EditorNavbar = ({
       color: 'success',
     });
     navigate('/');
+  };
+
+  const HandleOnClickOnCodeRunner = async () => {
+    setIsLoading(true);
+    if (handleCodeRunner) {
+      try {
+        await handleCodeRunner();
+      } catch (error) {
+        addToast({
+          title: 'Unable to excute code',
+          variant: 'solid',
+          color: 'danger',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
@@ -127,9 +146,9 @@ export const EditorNavbar = ({
               as={Link}
               color='primary'
               href='#'
-              onClick={handleCodeRunner}
+              onClick={HandleOnClickOnCodeRunner}
               variant='flat'>
-              <Play />
+              {isLoading ? <Spinner color='primary' /> : <Play />}
             </Button>
           </Tooltip>
         </NavbarItem>

@@ -12,12 +12,12 @@ export const InputOutputTabs: React.FC<InputOutputTabsProps> = ({ output }) => {
   const [selected, setSelected] = useState('input');
 
   useEffect(() => {
-    if (output?.isError) {
+    if (output?.output) {
       setSelected('output');
     } else {
       setSelected('input');
     }
-  }, [output]);
+  }, [output?.output]);
 
   return (
     <Tabs
