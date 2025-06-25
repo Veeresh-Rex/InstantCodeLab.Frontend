@@ -5,7 +5,7 @@ import { Button } from '@heroui/button';
 import { InputOtp } from '@heroui/input-otp';
 
 import DefaultLayout from '@/layouts/default';
-import { title } from '@/components/primitives';
+import { subtitle, title } from '@/components/primitives';
 import { createLab } from '@/services/labRoomService';
 import { RoomResponseDto } from '@/types/labRoom';
 import { Snippet } from '@heroui/snippet';
@@ -19,7 +19,7 @@ export default function App() {
       <section className='flex flex-col items-center justify-center gap-4 py-8 md:py-10'>
         <div className='inline-block max-w-lg text-center justify-center'>
           {!roomResponse ? (
-            <div>
+            <>
               <h1 className={title()}>Create your new lab</h1>
               <Form
                 className='w-full max-w-100 flex flex-col gap-4 mt-16'
@@ -70,23 +70,24 @@ export default function App() {
                   Submit
                 </Button>
               </Form>
-            </div>
+            </>
           ) : (
-            <div>
-              <h1 className={title()}>Urls are ready</h1>
-              <div className='w-full gap-4 mt-16'>
-                <span className=''>Members URL: </span>
-                <Snippet color='primary' variant='bordered'>
+            <>
+              <h1 className={title()}>Get into Your Virtual Lab</h1>
+              <Form className='w-full max-w-100 flex flex-col gap-4 mt-16'>
+                <div className={subtitle({ class: '' })}>Member's link</div>
+                <Snippet hideSymbol={true} color='success' title='asckjnash'>
                   {roomResponse.membersUrl}
                 </Snippet>
-              </div>
-              <div className='w-full gap-4 mt-16'>
-                <span className=''>Admin URL:</span>
-                <Snippet color={'warning'} variant='bordered'>
+                <div className={subtitle({ class: '' })}>Admin's link</div>
+                <Snippet
+                  color='danger'
+                  hideSymbol={true}
+                  className='overflow-x-auto'>
                   {roomResponse.adminUrl}
                 </Snippet>
-              </div>
-            </div>
+              </Form>
+            </>
           )}
         </div>
       </section>

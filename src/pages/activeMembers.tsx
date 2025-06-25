@@ -93,6 +93,15 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
             key={column.uid}
             align={column.uid === 'actions' ? 'center' : 'start'}>
             {column.name}
+            {column.uid === 'name' ? (
+              <Chip
+                className='text-xs  font-semibold hover:cursor-pointer ml-2'
+                color='danger'
+                size='sm'
+                variant='solid'>
+                {users.length}
+              </Chip>
+            ) : null}
           </TableColumn>
         )}
       </TableHeader>

@@ -8,7 +8,7 @@ import {
   DropdownMenu,
 } from '@heroui/dropdown';
 import { Link } from '@heroui/link';
-import { Download, Play, LogOut, Trash2 } from 'lucide-react';
+import { Download, Play, LogOut, Trash2, SquaresExclude } from 'lucide-react';
 import { Chip } from '@heroui/chip';
 
 import { ThemeSwitch } from '@/components/theme-switch';
@@ -18,6 +18,7 @@ import connection from '@/services/signalRClient';
 import { addToast, SharedSelection } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { LanguageCode } from '@/constant/enums';
+import { Tooltip } from '@heroui/react';
 
 export const EditorNavbar = ({
   userName,
@@ -120,24 +121,28 @@ export const EditorNavbar = ({
 
       <NavbarContent className='hidden sm:flex gap-4' justify='center'>
         <NavbarItem>
-          <Button
-            isIconOnly
-            as={Link}
-            color='primary'
-            href='#'
-            onClick={handleCodeRunner}
-            variant='flat'>
-            <Play />
-          </Button>
+          <Tooltip content='Run Code' delay={5000}>
+            <Button
+              isIconOnly
+              as={Link}
+              color='primary'
+              href='#'
+              onClick={handleCodeRunner}
+              variant='flat'>
+              <Play />
+            </Button>
+          </Tooltip>
         </NavbarItem>
         <NavbarItem>
-          <Button
-            isIconOnly
-            color='success'
-            onClick={handleCodeDownload}
-            variant='flat'>
-            <Download />
-          </Button>
+          <Tooltip content='Download Code' delay={5000}>
+            <Button
+              isIconOnly
+              color='success'
+              onClick={handleCodeDownload}
+              variant='flat'>
+              <Download />
+            </Button>
+          </Tooltip>
         </NavbarItem>
       </NavbarContent>
 
@@ -157,10 +162,6 @@ export const EditorNavbar = ({
             />
           </DropdownTrigger>
           <DropdownMenu aria-label='Profile Actions' variant='flat'>
-            <DropdownItem key='profile' className='h-14 gap-2'>
-              <p className='font-semibold'>Signed in as</p>
-              <p className='font-semibold'>{userName}</p>
-            </DropdownItem>
             {getUser?.isAdmin ? (
               <DropdownItem
                 key='deleteroom'
@@ -171,6 +172,12 @@ export const EditorNavbar = ({
                 Delete Room
               </DropdownItem>
             ) : null}
+            <DropdownItem
+              key='share-link'
+              color='primary'
+              startContent={<SquaresExclude />}>
+              Copy Link
+            </DropdownItem>
             <DropdownItem
               key='logout'
               className={'text-danger'}
