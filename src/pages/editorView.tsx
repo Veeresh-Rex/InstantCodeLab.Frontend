@@ -66,6 +66,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
       clearUserInfo();
       addToast({
         color: 'danger',
+        variant: 'solid',
         title: 'Room Deleted',
         description: 'The room you were in has been deleted.',
       });
@@ -79,6 +80,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
     useCallback((updatedLanguage) => {
       addToast({
         color: 'warning',
+        variant: 'solid',
         title: 'Language Changed',
         description: `The language has been changed to ${updatedLanguage}.`,
       });
@@ -97,8 +99,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
         if (IsYouRemoved) {
           addToast({
             color: 'danger',
+            variant: 'solid',
             title: 'You have been removed',
-            description: `You have been removed from the session by the admin.`,
           });
           await stopConnection();
           navigate('/');
@@ -107,8 +109,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
         addToast({
           color: 'warning',
-          title: 'User Left',
-          description: `User ${leftUser?.username} has left the session.`,
+          title: `User ${leftUser?.username} has left the session`,
+          variant: 'solid',
         });
 
         setSelectedKeys(new Set([currentUser.id]));
@@ -141,12 +143,13 @@ export const EditorView: React.FC<EditorViewProps> = ({
         await connection.invoke('SwitchToEditor', connectedUser?.id);
         addToast({
           color: 'success',
+          variant: 'solid',
           title: 'Switched Editor to ' + connectedUser?.username,
         });
       } catch (error) {
         addToast({
           color: 'danger',
-          title: 'Error from server',
+          variant: 'solid',
           description: 'Failed to switch editor',
         });
         setSelectedKeys(new Set([currentUser.id]));
@@ -160,7 +163,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
       const response = await compileTheCode({
         code: lastValueRef.current,
         stdinInput: '',
-        language: LanguageCode.NodeJs,
+        language: language,
       });
       setResponse(response);
 
@@ -173,7 +176,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
       });
     } catch (ex) {}
   };
-  
+
   const handleCodeDownload = () => {
     const blob = new Blob([lastValueRef.current], {
       type: 'text/plain;charset=utf-8',

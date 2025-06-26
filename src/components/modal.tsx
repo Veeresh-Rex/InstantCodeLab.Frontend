@@ -49,6 +49,7 @@ export default function ModalPart({
     } catch (error) {
       addToast({
         color: 'danger',
+        variant: 'solid',
         title: 'Error from server',
         description: 'Failed to join lab. Please try again.',
       });
@@ -58,6 +59,7 @@ export default function ModalPart({
 
     addToast({
       color: 'success',
+      variant: 'solid',
       title: 'Success',
       description: 'You have successfully joined the lab.',
     });

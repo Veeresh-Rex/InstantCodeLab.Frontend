@@ -75,7 +75,7 @@ export const EditorNavbar = ({
     await stopConnection();
     clearUserInfo();
     addToast({
-      title: 'You left the successfully',
+      title: 'You left the room',
       variant: 'solid',
       color: 'success',
     });

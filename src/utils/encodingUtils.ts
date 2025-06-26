@@ -1,4 +1,4 @@
-export function stringToByteArray(str: string): Uint8Array {
+export function base64ToByteArray(str: string): Uint8Array {
   const binaryStr = atob(str);
   const len = binaryStr.length;
   const bytes = new Uint8Array(len);
@@ -10,7 +10,7 @@ export function stringToByteArray(str: string): Uint8Array {
   return bytes;
 }
 
-export function byteArrayToString(u8: Uint8Array): string {
+export function byteArrayToBase64(u8: Uint8Array): string {
   let str: string = '';
 
   u8.forEach((byte) => {
