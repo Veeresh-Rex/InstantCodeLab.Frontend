@@ -8,7 +8,6 @@ export const compileTheCode = async (
     const response = await apiClient.post('/api/Compiler', body);
     return response.data;
   } catch (error: any) {
-    console.error('Error in running code:', error);
     throw error;
   }
 };

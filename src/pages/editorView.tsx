@@ -42,6 +42,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
     new Set([currentUser.id])
   );
+  const [inputValue, setInputValue] = useState('');
 
   // Keep pairedUserRef in sync with prop
   useEffect(() => {
@@ -162,7 +163,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
     try {
       const response = await compileTheCode({
         code: lastValueRef.current,
-        stdinInput: '',
+        stdinInput: inputValue,
         language: language,
       });
       setResponse(response);
@@ -220,7 +221,12 @@ export const EditorView: React.FC<EditorViewProps> = ({
         </div>
         <div className='basis-1/6 flex flex-col mr-2'>
           <div className='h-50'>
-            <InputOutputTabs output={response} />
+            <InputOutputTabs
+              output={response}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setInputValue(e.target.value)
+              }
+            />
           </div>
           <div className='h-5/6 overflow-y-auto'>
             <ActiveMembers

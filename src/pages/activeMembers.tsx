@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   Table,
   TableHeader,
@@ -20,7 +20,7 @@ interface ActiveMembersProps {
   selectedKeys: Set<string>;
 }
 
-const columns = [
+const baseColumns = [
   { name: 'MEMBERS', uid: 'name' },
   { name: 'ACTIONS', uid: 'actions' },
 ];
@@ -31,33 +31,44 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
   currentUser,
   selectedKeys,
 }) => {
-  const onRemoveUser = async (id: string) => {
-    await invokeMethod('LeaveRoom', currentUser.joinedLabRoomId, id);
-  };
 
-  if (!currentUser?.isAdmin) {
-    columns.splice(1, 1);
-  }
+  const [memberCount, setMemberCount] = React.useState<number>(users.length);
 
+  React.useEffect(() => {
+    setMemberCount(users.length);
+  }, [users.length]);
+
+  const visibleColumns = useMemo(() => {
+    return currentUser?.isAdmin
+      ? baseColumns
+      : baseColumns.filter((col) => col.uid !== 'actions');
+  }, [currentUser?.isAdmin]);
+
+  const onRemoveUser = useCallback(
+    async (id: string) => {
+      await invokeMethod('LeaveRoom', currentUser.joinedLabRoomId, id);
+    },
+    [currentUser.joinedLabRoomId]
+  );
+  
+  // Render table cell content
   const renderCell = useCallback(
     (user: User, columnKey: string) => {
       switch (columnKey) {
         case 'name':
           return (
             <div>
-              {user.username}
-              {'  '}
-              {user.isAdmin ? (
+              {user.username}{' '}
+              {user.isAdmin && (
                 <Chip color='danger' size='sm'>
                   Admin
                 </Chip>
-              ) : null}
-              {'  '}
-              {currentUser?.id === user.id ? (
+              )}{' '}
+              {currentUser?.id === user.id && (
                 <Chip color='primary' size='sm'>
                   You
                 </Chip>
-              ) : null}
+              )}
             </div>
           );
         case 'actions':
@@ -75,7 +86,7 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
           return null;
       }
     },
-    [onRemoveUser]
+    [onRemoveUser, currentUser.id]
   );
 
   return (
@@ -85,29 +96,30 @@ const ActiveMembers: React.FC<ActiveMembersProps> = ({
       className='h-40'
       selectedKeys={selectedKeys}
       selectionMode='single'
-      // @ts-ignore
-      onSelectionChange={handleChangeUser}>
-      <TableHeader columns={columns}>
+      // @ts-ignore because heroui might have a loose type for this prop
+      onSelectionChange={handleChangeUser}
+      disallowEmptySelection>
+      <TableHeader columns={visibleColumns}>
         {(column) => (
           <TableColumn
             key={column.uid}
             align={column.uid === 'actions' ? 'center' : 'start'}>
             {column.name}
-            {column.uid === 'name' ? (
+            {column.uid === 'name' && (
               <Chip
-                className='text-xs  font-semibold hover:cursor-pointer ml-2'
+                className='text-xs font-semibold hover:cursor-pointer ml-2'
                 color='danger'
                 size='sm'
                 variant='solid'>
-                {users.length}
+                {memberCount}
               </Chip>
-            ) : null}
+            )}
           </TableColumn>
         )}
       </TableHeader>
       <TableBody items={users}>
         {(user) => (
-          <TableRow key={user?.id}>
+          <TableRow key={user.id}>
             {(columnKey) => (
               <TableCell>{renderCell(user, columnKey as string)}</TableCell>
             )}

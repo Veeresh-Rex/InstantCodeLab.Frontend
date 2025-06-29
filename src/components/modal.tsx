@@ -33,7 +33,6 @@ export default function ModalPart({
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { id } = useParams();
-  console.log('roomDetails', roomDetails);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -6,9 +6,10 @@ import { useEffect, useState } from 'react';
 
 type InputOutputTabsProps = {
   output?: CompileResponseDto | null;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export const InputOutputTabs: React.FC<InputOutputTabsProps> = ({ output }) => {
+export const InputOutputTabs: React.FC<InputOutputTabsProps> = ({ output, onChange }) => {
   const [selected, setSelected] = useState('input');
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export const InputOutputTabs: React.FC<InputOutputTabsProps> = ({ output }) => {
           }}
           placeholder='Enter your code input'
           variant='bordered'
+          onChange={onChange}
         />
       </Tab>
       <Tab

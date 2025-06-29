@@ -8,7 +8,6 @@ export const createLab = async (
     const response = await apiClient.post('/api/Room', body);
     return response.data;
   } catch (error: any) {
-    console.error('Error creating lab:', error);
     throw error;
   }
 };
