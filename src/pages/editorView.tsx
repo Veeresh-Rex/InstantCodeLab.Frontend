@@ -109,7 +109,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
         addToast({
           color: 'warning',
-          title: `User ${leftUser?.username} has left the session`,
+          title: `${leftUser?.username} has left the session`,
           variant: 'solid',
         });
 
@@ -198,7 +198,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
       <div className='flex flex-row'>
         <div className='basis-5/6 mr-2'>
           <Editor
-            defaultLanguage={mapToMonacoLanguage(language)}
+            language={mapToMonacoLanguage(language)}
             defaultPath='file.js'
             height='93vh'
             theme='vs-dark'

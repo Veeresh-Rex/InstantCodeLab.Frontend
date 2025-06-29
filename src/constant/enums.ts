@@ -9,4 +9,3 @@ export enum LanguageCode {
   Python3 = 'python3',
   Sql = 'sql',
 }
-

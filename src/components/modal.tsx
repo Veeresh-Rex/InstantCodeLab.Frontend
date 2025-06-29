@@ -15,6 +15,7 @@ import { userLoginLab } from '@/services/labService';
 import { GetRoomDto } from '@/types/labRoom';
 import { useParams } from 'react-router-dom';
 import { User } from '@/types/userTypes';
+import { useState } from 'react';
 
 interface ModalPartProps {
   roomDetails: GetRoomDto | null;
@@ -30,10 +31,13 @@ export default function ModalPart({
   const { isOpen, onClose, onOpenChange } = useDisclosure({
     defaultOpen: true,
   });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { id } = useParams();
+  console.log('roomDetails', roomDetails);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     let data = Object.fromEntries(new FormData(e.currentTarget));
 
     try {
@@ -55,6 +59,8 @@ export default function ModalPart({
       });
 
       return;
+    } finally {
+      setIsLoading(false);
     }
 
     addToast({
@@ -93,6 +99,7 @@ export default function ModalPart({
                 name='Password'
                 placeholder='Enter lab password'
                 type='password'
+                required
               />
             )}
             {isAdmin && roomDetails?.isAdminPinEnabled && (
@@ -103,10 +110,15 @@ export default function ModalPart({
                   name='AdminPIN'
                   type='password'
                   variant='faded'
+                  required
                 />
               </div>
             )}
-            <Button className='mt-b' color='primary' type='submit'>
+            <Button
+              className='mt-b'
+              color='primary'
+              type='submit'
+              isLoading={isLoading}>
               Submit
             </Button>
           </Form>

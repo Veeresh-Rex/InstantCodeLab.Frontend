@@ -6,6 +6,7 @@ import {
   DropdownTrigger,
   Dropdown,
   DropdownMenu,
+  DropdownSection,
 } from '@heroui/dropdown';
 import { Link } from '@heroui/link';
 import { Download, Play, LogOut, Trash2, SquaresExclude } from 'lucide-react';
@@ -15,7 +16,7 @@ import { ThemeSwitch } from '@/components/theme-switch';
 import { invokeMethod, stopConnection } from '@/services/signalRService';
 import { clearUserInfo, getUserInfo } from '@/services/userService';
 import connection from '@/services/signalRClient';
-import { addToast, SharedSelection, Spinner } from '@heroui/react';
+import { addToast, SharedSelection, Spinner, User } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { LanguageCode } from '@/constant/enums';
 import { Tooltip } from '@heroui/react';
@@ -140,7 +141,7 @@ export const EditorNavbar = ({
 
       <NavbarContent className='hidden sm:flex gap-4' justify='center'>
         <NavbarItem>
-          <Tooltip content='Run Code' delay={5000}>
+          <Tooltip content='Execute Code' delay={5000}>
             <Button
               isIconOnly
               as={Link}
@@ -180,31 +181,53 @@ export const EditorNavbar = ({
               size='sm'
             />
           </DropdownTrigger>
-          <DropdownMenu aria-label='Profile Actions' variant='flat'>
-            {getUser?.isAdmin ? (
-              <DropdownItem
-                key='deleteroom'
-                className={'text-danger'}
-                color='danger'
-                startContent={<Trash2 />}
-                onClick={deleteRoom}>
-                Delete Room
-              </DropdownItem>
-            ) : null}
+
+          <DropdownMenu aria-label='Profile Actions' variant='faded'>
+            <DropdownItem
+              key='profile'
+              isReadOnly
+              className='h-14 gap-2 opacity-100'>
+              <User
+                avatarProps={{
+                  size: 'sm',
+                }}
+                classNames={{
+                  name: 'text-default-600',
+                  description: 'text-default-500',
+                }}
+                name={getUser?.username || 'Anonymous'}
+              />
+            </DropdownItem>
             <DropdownItem
               key='share-link'
-              color='primary'
-              startContent={<SquaresExclude />}>
+              startContent={<SquaresExclude size={18} />}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/editor/${getUser?.joinedLabRoomId}`
+                );
+              }}>
               Copy Link
             </DropdownItem>
-            <DropdownItem
-              key='logout'
-              className={'text-danger'}
-              color='danger'
-              startContent={<LogOut />}
-              onClick={logoutUser}>
-              Log Out
-            </DropdownItem>
+            <DropdownSection title='Danger zone'>
+              {getUser?.isAdmin ? (
+                <DropdownItem
+                  key='deleteroom'
+                  className={'text-danger'}
+                  color='danger'
+                  startContent={<Trash2 size={18} />}
+                  onClick={deleteRoom}>
+                  Delete Room
+                </DropdownItem>
+              ) : null}
+              <DropdownItem
+                key='logout'
+                className={'text-danger'}
+                color='danger'
+                startContent={<LogOut size={18} />}
+                onClick={logoutUser}>
+                Logout
+              </DropdownItem>
+            </DropdownSection>
           </DropdownMenu>
         </Dropdown>
       </NavbarContent>
