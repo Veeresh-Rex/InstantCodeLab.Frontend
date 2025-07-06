@@ -38,10 +38,10 @@ const EditorPage: React.FC<EditorProps> = ({ IsAdmin = false }) => {
   // Set current user and code
   const handleUserlogin = useCallback(
     async (response: User) => {
-      setCurrentUser(response);
+      await invokeMethod('UserJoined', response?.joinedLabRoomId, response.id);
       setPairedUser(response);
       saveUserInfo(response);
-      await invokeMethod('UserJoined', response?.joinedLabRoomId, response.id);
+      setCurrentUser(response);
     },
     [pairedUser]
   );
